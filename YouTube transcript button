@@ -1,0 +1,110 @@
+// ==UserScript==
+// @name         YouTube transcript button
+// @namespace    http://tampermonkey.net/
+// @version      0.2
+// @description  Automatically clicks the "View all" and "Dismiss" buttons
+// @author       DIYking
+// @match        https://www.youtube.com/watch*
+// @grant        GM_setClipboard
+
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    let pageLoaded = false;
+
+    // Create a button element
+    var button = document.createElement('button');
+    button.textContent = 'Copy Transcript';
+    button.style.position = 'fixed';
+    button.style.top = '10px';
+    button.style.left = '10px';
+    button.style.zIndex = '9999';
+
+    // Aautomatically click the "View all" button for skipping to chapters/sections
+    function clickTranscript() {
+        var button = document.querySelector('button[aria-label="Show transcript"]');
+        if (button) {
+            button.click();
+        }
+    }
+
+    // Aautomatically click the "View all" button for skipping to chapters/sections
+    function getTranscript() {
+        var transcript = document.querySelectorAll("ytd-transcript-segment-renderer");
+
+        var combinedString = "summarise this transcript: \n";
+
+        for (var i = 0; i < transcript.length; i++) {
+            combinedString += "\n" + transcript[i].innerText;
+        }
+
+        // Add a click event listener to the button
+        button.addEventListener('click', function() {
+        // Copy "taco" to the clipboard
+        GM_setClipboard(combinedString, 'text');
+        //alert('Text "taco" copied to clipboard!');
+    });
+
+        // Add the button to the document body
+        document.body.appendChild(button);
+
+        console.log(combinedString);
+        let characterCount = combinedString.length;
+
+        var charLimit= 2000 //2048 chatGPT character input limit
+
+        var transcriptChucks = "empty";
+        console.log(transcriptChucks);
+
+
+        if(combinedString.length > charLimit);
+            transcriptChucks = splitString(combinedString,charLimit);
+        console.log(transcriptChucks);
+
+
+    }
+
+    function splitString(str, charLimit) {
+        chunkSize = charLimit;
+        const chunks = [];
+        for (let i = 0; i < str.length; i += chunkSize) {
+            chunks.push(str.substring(i, i + chunkSize));
+        }
+        return chunks;
+    }
+
+
+    // Alert when tab is switched
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            autoClicks();
+        }
+    });
+
+    // Alert when page fully loads for the first time
+    window.addEventListener('load', function() {
+        if (!pageLoaded) {
+            autoClicks();
+            pageLoaded = true;
+        }
+    });
+
+    function autoClicks() {
+        setTimeout(clickTranscript, 2000); // Adjust delay time as needed
+        setTimeout(getTranscript, 5000); // Adjust delay time as needed
+
+
+    }
+
+
+
+    /*
+    // Delay the click to ensure that the page has fully loaded
+    window.addEventListener('load', function() {
+        setTimeout(clickViewAllButton, 4000); // Adjust delay time as needed
+        setTimeout(clickDismissButton, 9000); // Adjust delay time as needed
+    });
+    */
+})();
